@@ -28,6 +28,13 @@ impl Entry {
         } else if path.ends_with("*") {
             let data = glob(path)
                 .unwrap()
+                .filter(|opt| {
+                    opt.as_ref().map_or(false, |f| {
+                        let ext = f.extension()
+                            .map_or("", |x| x.to_str().unwrap());
+                        ext == "zip" || ext == "jar"
+                    })
+                })
                 .map(|x| Box::new(Entry::from(x.unwrap().to_str().unwrap())))
                 .collect();
             Entry::WildcardEntry(data)
