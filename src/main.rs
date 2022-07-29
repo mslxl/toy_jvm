@@ -1,10 +1,12 @@
 extern crate core;
 
 use clap::Parser;
+use crate::classfile::ClassFile;
 use crate::classpath::ClassPath;
 
 mod entry;
 mod classpath;
+mod classfile;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = Some("Practice of book Write Your Own Java Virtual Machine"))]
@@ -26,7 +28,9 @@ fn start_jvm(cmd: &CmdArgs) {
 
     println!("classpath: {:#?}", cp);
     let class_name = cmd.clazz.replace(".", "/");
-    println!("class data: {:?}", cp.read_class(&class_name));
+    let bytes = cp.read_class(&class_name).unwrap();
+    let clazz = ClassFile::from(bytes);
+    println!("Class: {:#?}",clazz)
 }
 
 fn main() {
