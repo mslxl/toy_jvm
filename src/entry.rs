@@ -41,7 +41,7 @@ impl Entry {
             Entry::ZipEntry(file) => {
                 let file = fs::File::open(file).unwrap();
                 let mut archive = zip::ZipArchive::new(file).unwrap();
-                let mut clz = archive.by_name(class_name).unwrap();
+                let mut clz = archive.by_name(class_name).map_err(|x| x.to_string())?;
                 let mut data: Vec<u8> = Vec::new();
                 clz.read_to_end(&mut data).map_err(|x| x.to_string())?;
                 Ok(data)
