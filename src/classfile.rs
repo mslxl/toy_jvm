@@ -1,4 +1,6 @@
+use std::borrow::Cow;
 use std::cell::{RefCell, RefMut};
+use std::collections::HashSet;
 use std::fs::read;
 
 pub struct ClassReader {
@@ -38,8 +40,8 @@ impl ClassReader {
     pub fn read_u16s(&mut self) -> Vec<u16> {
         let size = self.read_u16();
         let mut v: Vec<u16> = Vec::with_capacity(size as usize);
-        for i in 0..size {
-            v[i as usize] = self.read_u16();
+        for _ in 0..size {
+            v.push(self.read_u16());
         }
         v
     }
@@ -55,33 +57,34 @@ impl ClassReader {
 pub struct ConstantPool(Vec<Option<ConstantInfo>>);
 
 impl ConstantPool {
-    fn get_constant_info(&self, index: u16) -> &ConstantInfo {
-        let info = self.0.get(index as usize).unwrap();
-        match info {
-            Some(i) => i,
-            None => panic!("Invalid constant pool index!")
-        }
+    pub fn get_constant_info(&self, index: u16) -> Option<&ConstantInfo> {
+        self.0.get(index as usize).unwrap().as_ref()
+    }
+    pub fn len(&self) -> usize {
+        self.0.len()
     }
 
-    fn get_utf8(&self, index: u16) -> &str {
-        if let ConstantInfo::Utf8(text) = self.get_constant_info(index) {
+    pub fn get_utf8(&self, index: u16) -> &str {
+        if let ConstantInfo::Utf8(text) = self.get_constant_info(index).expect("Invalid constant idx when get utf8") {
             text
         } else {
             panic!("constant info at {} is not a UTF8", index)
         }
     }
 
-    fn get_class_name(&self, index: u16) -> &str {
-        if let ConstantInfo::Class { name_index } = self.get_constant_info(index) {
-            self.get_utf8(*name_index)
+    pub fn get_class_name(&self, index: u16) -> Option<&str> {
+        if index == 0 {
+            None
+        } else if let ConstantInfo::Class { name_index } = self.get_constant_info(index).expect("Invalid constant idx when get classname") {
+            Some(self.get_utf8(*name_index))
         } else {
             panic!("constant info at {} is not a Class", index)
         }
     }
 
 
-    fn get_name_and_type(&self, index: u16) -> (&str, &str) {
-        if let ConstantInfo::NameAndType { name_index, descriptor_index } = self.get_constant_info(index) {
+    pub fn get_name_and_type(&self, index: u16) -> (&str, &str) {
+        if let ConstantInfo::NameAndType { name_index, descriptor_index } = self.get_constant_info(index).expect("Invalid constant idx when get name and type") {
             (self.get_utf8(*name_index), self.get_utf8(*descriptor_index))
         } else {
             panic!("constant info at {} is not a NameAndType", index)
@@ -124,30 +127,70 @@ pub enum ConstantInfo {
 
 #[derive(Debug)]
 pub struct MemberInfo {
-    constant_pool: ConstantPool,
-    access_flags: u16,
-    name_index: u16,
-    descriptor_index: u16,
-    attributes: Vec<AttributeInfo>,
+    pub access_flags: u16,
+    pub name_index: u16,
+    pub name: String,
+    pub descriptor_index: u16,
+    pub attributes: Vec<AttributeInfo>,
 }
 
 #[derive(Debug)]
-pub struct AttributeInfo {}
+struct ExceptionTable {
+    start_pc: u16,
+    end_pc: u16,
+    handler_pc: u16,
+    catch_type: u16,
+}
+
+#[derive(Debug)]
+pub enum AttributeInfo {
+    Deprecated,
+    Synthetic,
+    SourceFile {
+        sourcefile_index: u16,
+        sourcefile: String,
+    },
+    ConstantValue {
+        constantvalue_index: u16,
+    },
+    Code {
+        max_stack: u16,
+        max_locals: u16,
+        code: Vec<u8>,
+        exception_table: Vec<ExceptionTable>,
+        attributes: Vec<AttributeInfo>,
+    },
+    Exceptions,
+    LineNumberTable(Vec<LineNumberTableEntry>),
+    LocalVariableTable,
+    UnparsedAttribute {
+        attribute_name_index: u16,
+        attribute_name: String,
+        attribute_length: u32,
+        info: Vec<u8>,
+    },
+}
+
+#[derive(Debug)]
+pub struct LineNumberTableEntry {
+    start_pc: u16,
+    line_number: u16,
+}
 
 
 #[derive(Debug)]
 pub struct ClassFile {
     // magic:u32,
-    minor_version: u16,
-    major_version: u16,
-    constant_pool: ConstantPool,
-    access_flags: u16,
-    this_class: u16,
-    super_class: u16,
-    interfaces: Vec<u16>,
-    fields: Vec<MemberInfo>,
-    methods: Vec<MemberInfo>,
-    attributes: Vec<AttributeInfo>,
+    pub minor_version: u16,
+    pub major_version: u16,
+    pub constant_pool: ConstantPool,
+    pub access_flags: u16,
+    pub this_class: u16,
+    pub super_class: u16,
+    pub interfaces: Vec<u16>,
+    pub fields: Vec<MemberInfo>,
+    pub methods: Vec<MemberInfo>,
+    pub attributes: Vec<AttributeInfo>,
 }
 
 struct ClassReaderHelper(RefCell<ClassReader>);
@@ -289,15 +332,136 @@ impl ClassReaderHelper {
         }
         ConstantPool(item)
     }
+
+    fn read_interfaces(&self) -> Vec<u16> {
+        self.raw().read_u16s()
+    }
+
+    fn read_member_info(&self, constant_pool: &ConstantPool) -> MemberInfo {
+        let access_flags = self.raw().read_u16();
+        let name_index = self.raw().read_u16();
+        let descriptor_index = self.raw().read_u16();
+        let attributes = self.read_attributes(constant_pool);
+        let name = constant_pool.get_utf8(name_index).to_string();
+        MemberInfo {
+            access_flags,
+            name_index,
+            name,
+            descriptor_index,
+            attributes,
+        }
+    }
+
+    fn read_members(&self, constant_pool: &ConstantPool) -> Vec<MemberInfo> {
+        let cnt = self.raw().read_u16();
+        let mut items: Vec<MemberInfo> = Vec::new();
+        for _ in 0..cnt {
+            items.push(self.read_member_info(constant_pool));
+        }
+        items
+    }
+
+    fn read_attribute_info(&self, constant_pool: &ConstantPool) -> AttributeInfo {
+        let attribute_name_index = self.raw().read_u16();
+        let attribute_name = constant_pool.get_utf8(attribute_name_index);
+        let attribute_length = self.raw().read_u32();
+        match attribute_name {
+            "Deprecated" => AttributeInfo::Deprecated,
+            "Synthetic" => AttributeInfo::Synthetic,
+            "SourceFile" => {
+                assert_eq!(attribute_length, 2);
+                let sourcefile_index = self.raw().read_u16();
+                let sourcefile = constant_pool.get_utf8(sourcefile_index).to_string();
+                AttributeInfo::SourceFile { sourcefile_index, sourcefile }
+            }
+            "ConstantValue" => {
+                assert_eq!(attribute_length, 2);
+                let constantvalue_index = self.raw().read_u16();
+                AttributeInfo::ConstantValue { constantvalue_index }
+            }
+            "Code" => {
+                let max_stack = self.raw().read_u16();
+                let max_locals = self.raw().read_u16();
+                let code_length = self.raw().read_u32();
+                let mut code: Vec<u8> = Vec::new();
+                for _ in 0..code_length {
+                    code.push(self.raw().read_u8());
+                }
+                let exception_table = self.read_exception_table_attr(constant_pool);
+                let attributes = self.read_attributes(constant_pool);
+                AttributeInfo::Code {
+                    max_stack,
+                    max_locals,
+                    code,
+                    exception_table,
+                    attributes,
+                }
+            }
+            "LineNumberTable" => {
+                AttributeInfo::LineNumberTable(self.read_line_number_table_attr())
+            }
+            _ => {
+                let mut info: Vec<u8> = Vec::new();
+                for _ in 0..attribute_length {
+                    info.push(self.raw().read_u8())
+                }
+                AttributeInfo::UnparsedAttribute { attribute_name_index, attribute_name: attribute_name.to_string(), attribute_length, info }
+            }
+        }
+    }
+
+    fn read_line_number_table_attr(&self) -> Vec<LineNumberTableEntry> {
+        let len = self.raw().read_u16();
+        let mut entries = Vec::new();
+        for _ in 0..len {
+            entries.push(self.read_line_number_table_entry());
+        }
+        entries
+    }
+
+    fn read_line_number_table_entry(&self) -> LineNumberTableEntry {
+        let start_pc = self.raw().read_u16();
+        let line_number = self.raw().read_u16();
+        LineNumberTableEntry {
+            start_pc,
+            line_number,
+        }
+    }
+
+    fn read_exception_table_attr(&self, constant_pool: &ConstantPool) -> Vec<ExceptionTable> {
+        let exception_table_length = self.raw().read_u16();
+        let mut entries = Vec::new();
+        for _ in 0..exception_table_length {
+            entries.push(self.read_exception_table_entry(constant_pool));
+        }
+        entries
+    }
+
+    fn read_exception_table_entry(&self, constant_pool: &ConstantPool) -> ExceptionTable {
+        let start_pc = self.raw().read_u16();
+        let end_pc = self.raw().read_u16();
+        let handler_pc = self.raw().read_u16();
+        let catch_type = self.raw().read_u16();
+        ExceptionTable {
+            start_pc,
+            end_pc,
+            handler_pc,
+            catch_type,
+        }
+    }
+
+    fn read_attributes(&self, constant_pool: &ConstantPool) -> Vec<AttributeInfo> {
+        let cnt = self.raw().read_u16();
+        let mut attributes = Vec::new();
+        for _ in 0..cnt {
+            attributes.push(self.read_attribute_info(constant_pool));
+        }
+        attributes
+    }
 }
 
 
 impl ClassFile {
-    fn read_member(&mut self, reader: &mut ClassReader) {
-        todo!()
-    }
-
-
     pub fn from(data: Vec<u8>) -> Self {
         let reader = ClassReaderHelper::new(ClassReader::from(data));
         reader.read_and_check_magic();
@@ -306,6 +470,10 @@ impl ClassFile {
         let access_flags = reader.raw().read_u16();
         let this_class = reader.raw().read_u16();
         let super_class = reader.raw().read_u16();
+        let interfaces = reader.read_interfaces();
+        let fields = reader.read_members(&constant_pool);
+        let methods = reader.read_members(&constant_pool);
+        let attributes = reader.read_attributes(&constant_pool);
         ClassFile {
             minor_version,
             major_version,
@@ -313,10 +481,10 @@ impl ClassFile {
             access_flags,
             this_class,
             super_class,
-            interfaces: Vec::new(),
-            fields: Vec::new(),
-            methods: Vec::new(),
-            attributes: Vec::new(),
+            interfaces,
+            fields,
+            methods,
+            attributes,
         }
     }
 }
