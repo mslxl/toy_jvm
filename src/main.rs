@@ -4,6 +4,7 @@ use clap::Parser;
 use crate::classfile::{ClassFile, ConstantInfo};
 use crate::classpath::ClassPath;
 
+mod rtda;
 mod entry;
 mod classpath;
 mod classfile;
