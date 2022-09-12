@@ -2,7 +2,7 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 #[derive(Debug,Clone)]
-struct Obj {
+pub struct Obj {
     //todo
 }
 
@@ -11,12 +11,12 @@ struct Thread {
     stack: Stack,
 }
 
-#[derive(Clone)]
-struct Slot{
-    value: Option<SlotValue>,
+#[derive(Clone, Debug)]
+pub struct Slot{
+    pub value: Option<SlotValue>,
 }
 #[derive(Debug,Clone)]
-enum SlotValue{
+pub enum SlotValue{
     IntSlot(i32),
     FloatSlot(f32),
     LongSlot(i64),
@@ -24,14 +24,14 @@ enum SlotValue{
     RefSlot(Rc<RefCell<Obj>>)
 }
 
-struct OperandStack(Vec<Slot>);
+pub struct OperandStack(pub Vec<Slot>);
 
-struct LocalVars(Vec<Slot>);
+pub struct LocalVars(pub Vec<Slot>);
 
 
-struct Frame {
-    local_vars: LocalVars,
-    operand_stack: OperandStack,
+pub struct Frame {
+    pub local_vars: LocalVars,
+    pub operand_stack: OperandStack,
 }
 
 struct Stack(Vec<Frame>); // it didn't follow JVM rules, i.e. it never throw StackOverflowError due to it never be full
@@ -41,8 +41,44 @@ impl OperandStack{
         OperandStack(vec![Slot::new(); size])
     }
 
-    fn push(&mut self, slot: Slot){
+    pub fn push(&mut self, slot: Slot){
         self.0.push(slot);
+    }
+    pub fn pop(&mut self) -> Slot{
+        self.0.pop().unwrap()
+    }
+    pub fn push_ref(&mut self, reference: Option<Rc<RefCell<Obj>>>){
+        match reference {
+           None => self.push(Slot::new()),
+            Some(obj_ref) => {
+                let mut slot = Slot::new();
+                slot.value = Some(SlotValue::RefSlot(obj_ref))
+            }
+        }
+    }
+
+    pub fn push_double(&mut self, value:f64) {
+        let mut  slot = Slot::new();
+        slot.set_double(value);
+        self.push(slot)
+    }
+
+    pub fn push_int(&mut self, value:i32) {
+        let mut slot = Slot::new();
+        slot.set_int(value);
+        self.push(slot)
+    }
+
+    pub fn push_float(&mut self, value:f32) {
+        let mut slot = Slot::new();
+        slot.set_float(value);
+        self.push(slot)
+    }
+
+    pub fn push_long(&mut self, value: i64) {
+        let mut slot = Slot::new();
+        slot.set_long(value);
+        self.push(slot);
     }
 }
 
@@ -51,20 +87,24 @@ impl LocalVars{
         Self(vec![Slot::new(); size])
     }
 
-    fn get_slot(&mut self, index:usize) -> Option<&mut Slot>{
+    pub fn get_slot(&mut self, index:usize) -> Option<&mut Slot>{
         self.0.get_mut(index)
+    }
+
+    pub fn set_slot(&mut self, index:usize, value:Slot){
+        self.0[index] = value
     }
 }
 impl Slot{
-    fn new() -> Self{
+    pub fn new() -> Self{
         Slot{
             value:None
         }
     }
-    fn set_int(&mut self, value: i32){
+    pub fn set_int(&mut self, value: i32){
         self.value = Some(SlotValue::IntSlot(value))
     }
-    fn get_int(&self)->i32{
+    pub fn get_int(&self)->i32{
         if let SlotValue::IntSlot(value) = self.value.as_ref().unwrap() {
             *value
         }else{
@@ -72,10 +112,10 @@ impl Slot{
         }
     }
 
-    fn set_float(&mut self, value: f32){
+    pub fn set_float(&mut self, value: f32){
         self.value = Some(SlotValue::FloatSlot(value))
     }
-    fn get_float(&self)->f32{
+    pub fn get_float(&self)->f32{
         if let SlotValue::FloatSlot(value) = self.value.as_ref().unwrap() {
             *value
         }else{
@@ -83,10 +123,10 @@ impl Slot{
         }
     }
 
-    fn set_long(&mut self, value: i64){
+    pub fn set_long(&mut self, value: i64){
         self.value = Some(SlotValue::LongSlot(value))
     }
-    fn get_long(&self)->i64{
+    pub fn get_long(&self)->i64{
         if let SlotValue::LongSlot(value) = self.value.as_ref().unwrap() {
             *value
         }else{
@@ -94,10 +134,10 @@ impl Slot{
         }
     }
 
-    fn set_double(&mut self, value: f64){
+    pub fn set_double(&mut self, value: f64){
         self.value = Some(SlotValue::DoubleSlot(value))
     }
-    fn get_double(&self)->f64{
+    pub fn get_double(&self)->f64{
         if let SlotValue::DoubleSlot(value) = self.value.as_ref().unwrap() {
             *value
         }else{

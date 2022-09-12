@@ -1,5 +1,6 @@
 extern crate core;
 
+use std::rc::Rc;
 use clap::Parser;
 use crate::classfile::{ClassFile, ConstantInfo};
 use crate::classpath::ClassPath;
@@ -8,6 +9,8 @@ mod rtda;
 mod entry;
 mod classpath;
 mod classfile;
+mod bytecode_reader;
+mod instructions;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = Some("Practice of book Write Your Own Java Virtual Machine"))]
@@ -27,7 +30,7 @@ pub struct CmdArgs {
 fn start_jvm(cmd: &CmdArgs) {
     let cp = ClassPath::parse(cmd);
     let class_name = cmd.clazz.replace(".", "/");
-    let bytes = cp.read_class(&class_name).unwrap();
+    let bytes = Rc::new(cp.read_class(&class_name).unwrap());
     let clazz = ClassFile::from(bytes);
 
     println!("version: \t{}.{}", clazz.major_version, clazz.minor_version);

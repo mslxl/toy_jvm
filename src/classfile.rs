@@ -2,14 +2,15 @@ use std::borrow::Cow;
 use std::cell::{RefCell, RefMut};
 use std::collections::HashSet;
 use std::fs::read;
+use std::rc::Rc;
 
 pub struct ClassReader {
-    data: Vec<u8>,
+    data: Rc<Vec<u8>>,
     pos: usize,
 }
 
 impl ClassReader {
-    pub fn from(data: Vec<u8>) -> ClassReader {
+    pub fn from(data: Rc<Vec<u8>>) -> ClassReader {
         ClassReader {
             data,
             pos: 0,
@@ -462,7 +463,7 @@ impl ClassReaderHelper {
 
 
 impl ClassFile {
-    pub fn from(data: Vec<u8>) -> Self {
+    pub fn from(data: Rc<Vec<u8>>) -> Self {
         let reader = ClassReaderHelper::new(ClassReader::from(data));
         reader.read_and_check_magic();
         let (minor_version, major_version) = reader.read_and_check_version();
