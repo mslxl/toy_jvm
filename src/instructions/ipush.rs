@@ -3,6 +3,7 @@ use crate::bytecode_reader::BytecodeReader;
 use crate::instructions::base::Instr;
 use crate::rtda::Frame;
 
+#[derive(Debug)]
 struct BIPush {
     value: i8
 }
@@ -16,6 +17,7 @@ impl Instr for BIPush{
         frame.operand_stack.push_int(self.value as i32)
     }
 }
+#[derive(Debug)]
 struct SIPush{
     value: i16
 }

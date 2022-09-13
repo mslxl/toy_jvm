@@ -49,10 +49,13 @@ fn long_op<F>(frame:&mut Frame, op: F) where F: FnOnce(i64,i64)->i64{
     panic!("math: var at stack is not a long")
 }
 
-
+#[derive(Debug)]
 struct DRem;
+#[derive(Debug)]
 struct FRem;
+#[derive(Debug)]
 struct IRem;
+#[derive(Debug)]
 struct LRem;
 impl Instr for DRem{
     fn fetch(&mut self, _reader: &mut BytecodeReader) {
@@ -96,10 +99,13 @@ impl Instr for LRem{
 }
 
 
-
+#[derive(Debug)]
 struct DAdd;
+#[derive(Debug)]
 struct IAdd;
+#[derive(Debug)]
 struct FAdd;
+#[derive(Debug)]
 struct LAdd;
 
 impl Instr for DAdd {
@@ -140,11 +146,13 @@ impl Instr for LAdd{
     }
 }
 
-
-
+#[derive(Debug)]
 struct DSub;
+#[derive(Debug)]
 struct ISub;
+#[derive(Debug)]
 struct LSub;
+#[derive(Debug)]
 struct FSub;
 
 
@@ -186,10 +194,13 @@ impl Instr for LSub{
         long_op(frame, |a,b| {a  - b})
     }
 }
-
+#[derive(Debug)]
 struct DMul;
+#[derive(Debug)]
 struct FMul;
+#[derive(Debug)]
 struct IMul;
+#[derive(Debug)]
 struct LMul;
 impl Instr for DMul {
     fn fetch(&mut self, reader: &mut BytecodeReader) {
@@ -228,10 +239,13 @@ impl Instr for LMul{
     }
 }
 
-
+#[derive(Debug)]
 struct DDiv;
+#[derive(Debug)]
 struct FDiv;
+#[derive(Debug)]
 struct IDiv;
+#[derive(Debug)]
 struct LDiv;
 
 
@@ -274,10 +288,13 @@ impl Instr for LDiv{
         long_op(frame, |a,b| {a / b})
     }
 }
-
+#[derive(Debug)]
 struct FNeg;
+#[derive(Debug)]
 struct DNeg;
+#[derive(Debug)]
 struct INeg;
+#[derive(Debug)]
 struct LNeg;
 
 impl Instr for FNeg{

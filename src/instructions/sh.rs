@@ -2,11 +2,17 @@ use crate::bytecode_reader::BytecodeReader;
 use crate::instructions::base::Instr;
 use crate::rtda::{Frame, SlotValue};
 
+#[derive(Debug)]
 struct IShl;
+#[derive(Debug)]
 struct IShr;
+#[derive(Debug)]
 struct IUShr;
+#[derive(Debug)]
 struct LShl;
+#[derive(Debug)]
 struct LShr;
+#[derive(Debug)]
 struct LUShr;
 
 impl Instr for IShl{

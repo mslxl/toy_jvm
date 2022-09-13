@@ -2,7 +2,9 @@ use crate::bytecode_reader::BytecodeReader;
 use crate::instructions::base::Instr;
 use crate::rtda::Frame;
 
+#[derive(Debug)]
 struct Pop;
+#[derive(Debug)]
 struct Pop2;
 
 impl Instr for Pop{

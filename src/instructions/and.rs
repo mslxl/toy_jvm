@@ -1,8 +1,9 @@
 use crate::bytecode_reader::BytecodeReader;
 use crate::instructions::base::Instr;
 use crate::rtda::{Frame, SlotValue};
-
+#[derive(Debug)]
 struct IAnd;
+#[derive(Debug)]
 struct LAnd;
 
 

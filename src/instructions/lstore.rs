@@ -11,7 +11,7 @@ fn lstore(frame : &mut Frame, index:usize){
         panic!("lstore: var at stack top is not a long, it's: {:?}", slot)
     }
 }
-
+#[derive(Debug)]
 struct LStore {
     index: usize
 }
@@ -27,6 +27,7 @@ impl Instr for LStore{
         lstore(frame, self.index)
     }
 }
+#[derive(Debug)]
 struct LStore0;
 
 impl Instr for LStore0{
@@ -38,6 +39,7 @@ impl Instr for LStore0{
         lstore(frame, 0)
     }
 }
+#[derive(Debug)]
 struct LStore1;
 impl Instr for LStore1{
     fn fetch(&mut self, _reader: &mut BytecodeReader) {
@@ -48,6 +50,7 @@ impl Instr for LStore1{
         lstore(frame, 1)
     }
 }
+#[derive(Debug)]
 struct LStore2;
 impl Instr for LStore2{
     fn fetch(&mut self, _reader: &mut BytecodeReader) {
@@ -58,6 +61,7 @@ impl Instr for LStore2{
         lstore(frame, 2)
     }
 }
+#[derive(Debug)]
 struct LStore3;
 impl Instr for LStore3{
     fn fetch(&mut self, _reader: &mut BytecodeReader) {

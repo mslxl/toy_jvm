@@ -3,7 +3,7 @@ use crate::instructions::base::Instr;
 use crate::rtda::Frame;
 
 #[derive(Debug)]
-struct NopInstr;
+pub struct NopInstr;
 
 impl Instr for NopInstr{
     fn fetch(&mut self, reader: &mut BytecodeReader) {

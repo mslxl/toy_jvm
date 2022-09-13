@@ -1,7 +1,7 @@
 use crate::bytecode_reader::BytecodeReader;
 use crate::instructions::base::Instr;
 use crate::rtda::Frame;
-
+#[derive(Debug)]
 struct Dup;
 impl Instr for Dup{
     fn fetch(&mut self, reader: &mut BytecodeReader) {
@@ -14,6 +14,7 @@ impl Instr for Dup{
         frame.operand_stack.push(v);
     }
 }
+#[derive(Debug)]
 struct DupX1;
 impl Instr for DupX1{
     fn fetch(&mut self, reader: &mut BytecodeReader) {
@@ -27,6 +28,7 @@ impl Instr for DupX1{
         frame.operand_stack.push(v);
     }
 }
+#[derive(Debug)]
 struct DupX2;
 impl Instr for DupX2{
     fn fetch(&mut self, reader: &mut BytecodeReader) {
@@ -41,6 +43,7 @@ impl Instr for DupX2{
         frame.operand_stack.push(v);
     }
 }
+#[derive(Debug)]
 struct Dup2;
 impl Instr for Dup2{
     fn fetch(&mut self, reader: &mut BytecodeReader) {
@@ -53,6 +56,7 @@ impl Instr for Dup2{
         frame.operand_stack.push(v);
     }
 }
+#[derive(Debug)]
 struct Dup2X1;
 impl Instr for Dup2X1{
     fn fetch(&mut self, reader: &mut BytecodeReader) {
@@ -66,6 +70,8 @@ impl Instr for Dup2X1{
         frame.operand_stack.push(v);
     }
 }
+
+#[derive(Debug)]
 struct Dup2X2;
 
 impl Instr for Dup2X2{
