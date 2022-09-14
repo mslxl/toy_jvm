@@ -50,13 +50,13 @@ fn long_op<F>(frame:&mut Frame, op: F) where F: FnOnce(i64,i64)->i64{
 }
 
 #[derive(Debug)]
-struct DRem;
+pub struct DRem;
 #[derive(Debug)]
-struct FRem;
+pub struct FRem;
 #[derive(Debug)]
-struct IRem;
+pub struct IRem;
 #[derive(Debug)]
-struct LRem;
+pub struct LRem;
 impl Instr for DRem{
     fn fetch(&mut self, _reader: &mut BytecodeReader) {
 
@@ -100,13 +100,13 @@ impl Instr for LRem{
 
 
 #[derive(Debug)]
-struct DAdd;
+pub struct DAdd;
 #[derive(Debug)]
-struct IAdd;
+pub struct IAdd;
 #[derive(Debug)]
-struct FAdd;
+pub struct FAdd;
 #[derive(Debug)]
-struct LAdd;
+pub struct LAdd;
 
 impl Instr for DAdd {
     fn fetch(&mut self, reader: &mut BytecodeReader) {
@@ -147,13 +147,13 @@ impl Instr for LAdd{
 }
 
 #[derive(Debug)]
-struct DSub;
+pub struct DSub;
 #[derive(Debug)]
-struct ISub;
+pub struct ISub;
 #[derive(Debug)]
-struct LSub;
+pub struct LSub;
 #[derive(Debug)]
-struct FSub;
+pub struct FSub;
 
 
 impl Instr for DSub{
@@ -195,13 +195,13 @@ impl Instr for LSub{
     }
 }
 #[derive(Debug)]
-struct DMul;
+pub struct DMul;
 #[derive(Debug)]
-struct FMul;
+pub struct FMul;
 #[derive(Debug)]
-struct IMul;
+pub struct IMul;
 #[derive(Debug)]
-struct LMul;
+pub struct LMul;
 impl Instr for DMul {
     fn fetch(&mut self, reader: &mut BytecodeReader) {
 
@@ -240,13 +240,13 @@ impl Instr for LMul{
 }
 
 #[derive(Debug)]
-struct DDiv;
+pub struct DDiv;
 #[derive(Debug)]
-struct FDiv;
+pub struct FDiv;
 #[derive(Debug)]
-struct IDiv;
+pub struct IDiv;
 #[derive(Debug)]
-struct LDiv;
+pub struct LDiv;
 
 
 impl Instr for DDiv {
@@ -289,13 +289,13 @@ impl Instr for LDiv{
     }
 }
 #[derive(Debug)]
-struct FNeg;
+pub struct FNeg;
 #[derive(Debug)]
-struct DNeg;
+pub struct DNeg;
 #[derive(Debug)]
-struct INeg;
+pub struct INeg;
 #[derive(Debug)]
-struct LNeg;
+pub struct LNeg;
 
 impl Instr for FNeg{
     fn fetch(&mut self, reader: &mut BytecodeReader) {

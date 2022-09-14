@@ -1,9 +1,9 @@
-extern crate core;
 
 use std::rc::Rc;
 use clap::Parser;
-use crate::classfile::{ClassFile, ConstantInfo};
+use crate::classfile::{ClassFile, ConstantInfo, MemberInfo};
 use crate::classpath::ClassPath;
+use crate::interp::interpret;
 
 mod rtda;
 mod entry;
@@ -11,6 +11,7 @@ mod classpath;
 mod classfile;
 mod bytecode_reader;
 mod instructions;
+mod interp;
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, long_about = Some("Practice of book Write Your Own Java Virtual Machine"))]
@@ -27,7 +28,31 @@ pub struct CmdArgs {
     clazz: String,
 }
 
-fn start_jvm(cmd: &CmdArgs) {
+fn load_class(class_name: &str, cp:&ClassPath ) -> ClassFile{
+    let data = Rc::new(cp.read_class(class_name).unwrap());
+    ClassFile::from(data)
+}
+
+fn get_main_method(class_file: &ClassFile) -> Option<MemberInfo> {
+    for method in class_file.methods.clone(){
+        if method.name == "main" && class_file.constant_pool.get_utf8(method.descriptor_index)  == "([Ljava/lang/String;)V" {
+            return Some(method)
+        }
+    }
+    None
+}
+
+fn start_jvm(cmd: &CmdArgs){
+    let cp = ClassPath::parse(cmd);
+    let class_name = cmd.clazz.replace(".", "/");
+    let class_file = load_class(&class_name, &cp);
+    let method = get_main_method(&class_file).expect(&format!("Can't find static main method at {}", class_name));
+    interpret(&method);
+}
+
+
+
+fn info_class(cmd: &CmdArgs) {
     let cp = ClassPath::parse(cmd);
     let class_name = cmd.clazz.replace(".", "/");
     let bytes = Rc::new(cp.read_class(&class_name).unwrap());

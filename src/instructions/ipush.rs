@@ -4,8 +4,13 @@ use crate::instructions::base::Instr;
 use crate::rtda::Frame;
 
 #[derive(Debug)]
-struct BIPush {
+pub struct BIPush {
     value: i8
+}
+impl BIPush{
+    pub(crate) fn new() -> Self{
+        Self{value: 0}
+    }
 }
 
 impl Instr for BIPush{
@@ -18,8 +23,16 @@ impl Instr for BIPush{
     }
 }
 #[derive(Debug)]
-struct SIPush{
+pub struct SIPush{
     value: i16
+}
+
+impl SIPush{
+    pub(crate) fn new() -> Self{
+        Self{
+            value: 0
+        }
+    }
 }
 impl Instr for SIPush{
     fn fetch(&mut self, reader: &mut BytecodeReader) {

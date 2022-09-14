@@ -12,8 +12,15 @@ fn iload(frame: &mut Frame, index:usize){
 }
 
 #[derive(Debug)]
-struct ILoad{
+pub struct ILoad{
     index: usize
+}
+impl ILoad{
+    pub(crate) fn new() -> Self{
+        Self{
+            index: 0
+        }
+    }
 }
 
 impl Instr for ILoad{
@@ -26,7 +33,7 @@ impl Instr for ILoad{
     }
 }
 #[derive(Debug)]
-struct ILoad0;
+pub struct ILoad0;
 impl Instr for ILoad0 {
     fn fetch(&mut self, reader: &mut BytecodeReader) {
 
@@ -37,7 +44,7 @@ impl Instr for ILoad0 {
     }
 }
 #[derive(Debug)]
-struct ILoad1;
+pub struct ILoad1;
 impl Instr for ILoad1 {
     fn fetch(&mut self, reader: &mut BytecodeReader) {
 
@@ -48,7 +55,7 @@ impl Instr for ILoad1 {
     }
 }
 #[derive(Debug)]
-struct ILoad2;
+pub struct ILoad2;
 impl Instr for ILoad2 {
     fn fetch(&mut self, reader: &mut BytecodeReader) {
 
@@ -59,7 +66,7 @@ impl Instr for ILoad2 {
     }
 }
 #[derive(Debug)]
-struct ILoad3;
+pub struct ILoad3;
 impl Instr for ILoad3 {
     fn fetch(&mut self, reader: &mut BytecodeReader) {
 

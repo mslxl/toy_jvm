@@ -126,7 +126,7 @@ pub enum ConstantInfo {
     InvokeDynamic,
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct MemberInfo {
     pub access_flags: u16,
     pub name_index: u16,
@@ -135,15 +135,26 @@ pub struct MemberInfo {
     pub attributes: Vec<AttributeInfo>,
 }
 
-#[derive(Debug)]
-struct ExceptionTable {
+impl MemberInfo{
+    pub fn code_attr(&self) -> AttributeInfo {
+        for attr in self.attributes.clone() {
+            if let AttributeInfo::Code { .. } = attr {
+                return attr
+            }
+        }
+        panic!()
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ExceptionTable {
     start_pc: u16,
     end_pc: u16,
     handler_pc: u16,
     catch_type: u16,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum AttributeInfo {
     Deprecated,
     Synthetic,
@@ -172,7 +183,7 @@ pub enum AttributeInfo {
     },
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone,Copy)]
 pub struct LineNumberTableEntry {
     start_pc: u16,
     line_number: u16,

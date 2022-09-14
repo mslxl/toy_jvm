@@ -3,9 +3,18 @@ use crate::bytecode_reader::BytecodeReader;
 use crate::instructions::base::Instr;
 use crate::rtda::{Frame, SlotValue};
 #[derive(Debug)]
-struct IInc{
+pub struct IInc{
     index: usize,
     const_value: i32
+}
+
+impl IInc{
+    pub(crate) fn new() -> Self{
+        Self{
+            index: 0,
+            const_value: 0
+        }
+    }
 }
 
 impl Instr for IInc{
@@ -16,7 +25,7 @@ impl Instr for IInc{
 
     fn exec(&self, frame: &mut Frame) {
         let mut val = frame.local_vars.get_slot(self.index).unwrap().clone();
-        if let SlotValue::IntSlot(v) = val.value.unwrap().clone() {
+        if let SlotValue::IntSlot(v) = val.value.as_ref().unwrap().clone() {
             val.set_int(v + self.const_value)
         }else{
             panic!()

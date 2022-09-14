@@ -1,19 +1,26 @@
 use std::rc::Rc;
 
 pub struct BytecodeReader{
-    code: Rc<[u8]>,
+    code: Rc<Vec<u8>>,
     pc: usize,
 }
 
 impl BytecodeReader{
-    pub fn new(code: Rc<[u8]>)->Self {
+    pub fn pc(&self) -> usize{
+        self.pc
+    }
+    pub fn new(code: Rc<Vec<u8>>)->Self {
         Self{
             code,
             pc: 0
         }
     }
-    pub fn reset(&mut self, code:Rc<[u8]>, pc:usize){
-        self.code = code;
+
+    pub fn set_pc(&mut self, pc:usize) {
+        self.pc = pc;
+    }
+    pub fn reset(&mut self, code:&Rc<Vec<u8>>, pc:usize){
+        self.code = Rc::clone(code);
         self.peek(pc);
     }
     pub fn peek(&mut self, pc:usize){
@@ -36,7 +43,8 @@ impl BytecodeReader{
     }
 
     pub fn read_i16(&mut self) -> i16 {
-        self.read_u16().try_into().unwrap()
+        let b = self.read_u16();
+        b as i16
     }
 
     pub fn read_i32(&mut self) -> i32{

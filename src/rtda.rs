@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::fmt::{Display, Formatter, write};
 use std::rc::Rc;
 
 #[derive(Debug,Clone)]
@@ -6,7 +7,7 @@ pub struct Obj {
     //todo
 }
 
-struct Thread {
+pub struct Thread {
     pc: i32,
     stack: Stack,
 }
@@ -32,6 +33,29 @@ pub struct LocalVars(pub Vec<Slot>);
 pub struct Frame {
     pub local_vars: LocalVars,
     pub operand_stack: OperandStack,
+
+    pub next_pc: i32,
+    pub thread: *mut Thread,
+}
+impl Frame{
+    pub fn set_next_pc(&mut self, pc:i32) {
+        self.next_pc = pc;
+    }
+}
+
+impl Display for Frame{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Frame:\n").unwrap();
+        write!(f,"\tVar table:\n").unwrap();
+        for slot in self.local_vars.0.iter() {
+            write!(f, "\t+ {:?}\n", slot.value).unwrap();
+        }
+        write!(f,"\tStack:\n").unwrap();
+        for slot in self.operand_stack.0.iter() {
+            write!(f, "\t+ {:?}\n", slot.value).unwrap();
+        }
+        write!(f, "\t+ Bottom\n")
+    }
 }
 
 struct Stack(Vec<Frame>); // it didn't follow JVM rules, i.e. it never throw StackOverflowError due to it never be full
@@ -146,14 +170,6 @@ impl Slot{
     }
 }
 
-impl Frame{
-    fn new(max_locals:usize, max_stack:usize) -> Self{
-        Frame{
-            local_vars: LocalVars::new(max_locals),
-            operand_stack: OperandStack::new(max_stack)
-        }
-    }
-}
 
 impl Stack {
     fn new(size:usize) -> Self {
@@ -162,25 +178,44 @@ impl Stack {
 }
 
 impl Thread {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             pc: 0,
             stack: Stack::new(1024),
         }
     }
-    fn pc(&self) -> i32 {
+    pub fn new_frame(&mut self, max_locals:usize, max_stacks:usize) -> Frame {
+        let ptr = self as *mut Self;
+        Frame{
+            local_vars: LocalVars::new(max_locals),
+            operand_stack: OperandStack::new(max_stacks),
+            next_pc: 0,
+            thread: ptr,
+        }
+    }
+    pub fn pc(&self) -> i32 {
         self.pc
     }
-    fn set_pc(&mut self, pc: i32) {
+    pub fn set_pc(&mut self, pc: i32) {
         self.pc = pc
     }
-    fn push_frame(&mut self, frame: Frame) {
+    pub fn push_frame(&mut self, frame: Frame) {
         self.stack.0.push(frame)
     }
-    fn pop_frame(&mut self) -> Frame {
+    pub fn pop_frame(&mut self) -> Frame {
         self.stack.0.pop().unwrap()
     }
-    fn current_frame(&self) -> &Frame {
+    pub fn current_frame(&self) -> &Frame {
         self.stack.0.last().unwrap()
+    }
+}
+
+impl Display for Thread{
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "---Thread Display Beg---\n").unwrap();
+        for frame in self.stack.0.iter() {
+            write!(f, "{}", frame).unwrap();
+        }
+        write!(f, "---Thread Display End---\n")
     }
 }

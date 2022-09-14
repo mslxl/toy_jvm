@@ -3,9 +3,9 @@ use crate::instructions::base::Instr;
 use crate::rtda::Frame;
 
 #[derive(Debug)]
-struct Pop;
+pub struct Pop;
 #[derive(Debug)]
-struct Pop2;
+pub struct Pop2;
 
 impl Instr for Pop{
     fn fetch(&mut self, reader: &mut BytecodeReader) {

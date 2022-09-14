@@ -2,7 +2,7 @@ use crate::bytecode_reader::BytecodeReader;
 use crate::instructions::base::Instr;
 use crate::rtda::Frame;
 #[derive(Debug)]
-struct Dup;
+pub struct Dup;
 impl Instr for Dup{
     fn fetch(&mut self, reader: &mut BytecodeReader) {
 
@@ -15,7 +15,7 @@ impl Instr for Dup{
     }
 }
 #[derive(Debug)]
-struct DupX1;
+pub struct DupX1;
 impl Instr for DupX1{
     fn fetch(&mut self, reader: &mut BytecodeReader) {
 
@@ -29,7 +29,7 @@ impl Instr for DupX1{
     }
 }
 #[derive(Debug)]
-struct DupX2;
+pub struct DupX2;
 impl Instr for DupX2{
     fn fetch(&mut self, reader: &mut BytecodeReader) {
 
@@ -44,7 +44,7 @@ impl Instr for DupX2{
     }
 }
 #[derive(Debug)]
-struct Dup2;
+pub struct Dup2;
 impl Instr for Dup2{
     fn fetch(&mut self, reader: &mut BytecodeReader) {
 
@@ -57,7 +57,7 @@ impl Instr for Dup2{
     }
 }
 #[derive(Debug)]
-struct Dup2X1;
+pub struct Dup2X1;
 impl Instr for Dup2X1{
     fn fetch(&mut self, reader: &mut BytecodeReader) {
 
@@ -72,7 +72,7 @@ impl Instr for Dup2X1{
 }
 
 #[derive(Debug)]
-struct Dup2X2;
+pub struct Dup2X2;
 
 impl Instr for Dup2X2{
     fn fetch(&mut self, reader: &mut BytecodeReader) {

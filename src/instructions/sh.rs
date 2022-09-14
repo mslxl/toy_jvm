@@ -3,17 +3,17 @@ use crate::instructions::base::Instr;
 use crate::rtda::{Frame, SlotValue};
 
 #[derive(Debug)]
-struct IShl;
+pub struct IShl;
 #[derive(Debug)]
-struct IShr;
+pub struct IShr;
 #[derive(Debug)]
-struct IUShr;
+pub struct IUShr;
 #[derive(Debug)]
-struct LShl;
+pub struct LShl;
 #[derive(Debug)]
-struct LShr;
+pub struct LShr;
 #[derive(Debug)]
-struct LUShr;
+pub struct LUShr;
 
 impl Instr for IShl{
     fn fetch(&mut self, reader: &mut BytecodeReader) {
